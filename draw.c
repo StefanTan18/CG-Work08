@@ -20,7 +20,98 @@
   Color should be set differently for each polygon.
   ====================*/
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
+  double x0, y0, z0;
+  double x1, y1, z1;
+  double x2, y2, z2;
 
+  double tx, ty, tz;
+  double mx, my, mz;
+  double bx, by, bz;
+
+  x0 = points->m[0][i];
+  x1 = points->m[0][i+1];
+  x2 = points->m[0][i+2];
+  y0 = points->m[1][i];
+  y1 = points->m[1][i+1];
+  y2 = points->m[1][i+2];
+  z0 = points->m[2][i];
+  z1 = points->m[2][i+1];
+  z2 = points->m[2][i+2];
+
+  if (y1 > y0) {
+    if (y2 > y1) {
+      tx = x2;
+      ty = y2;
+      tz = z2;
+      mx = x1;
+      my = y1;
+      mz = z1;
+      bx = x0;
+      by = y0;
+      bz = z0;
+    }
+    else {
+      if (y2 > y0) {
+	tx = x1;
+	ty = y1;
+	tz = z1;
+	mx = x2;
+	my = y2;
+	mz = z2;
+	bx = y0;
+	by = y0;
+	zy = z0;
+      }
+      else {
+	tx = x1;
+	ty = y1;
+	tz = z1;
+	mx = x0;
+	my = y0;
+	mz = z0;
+	bx = y2;
+	by = y2;
+	zy = z2;
+      }
+    }
+    else {
+      if (y0 > y2) {
+	if (y2 > y1) {
+	  tx = x0;
+	  ty = y0;
+	  tz = z0;
+	  mx = x2;
+	  my = y2;
+	  mz = z2;
+	  bx = x1;
+	  by = y1;
+	  bz = z1;       
+	}
+	else {
+	  tx = x0;
+	  ty = y0;
+	  tz = z0;
+	  mx = x1;
+	  my = y1;
+	  mz = z1;
+	  bx = x2;
+	  by = y2;
+	  bz = z2;
+	}
+      }
+      else {
+	tx = x2;
+	ty = y2;
+	tz = z2;
+	mx = x0;
+	my = y0;
+	mz = z0;
+	bx = x1;
+	by = y1;
+	bz = z1;
+      }
+    }
+  }
 }
 
 /*======== void add_polygon() ==========
