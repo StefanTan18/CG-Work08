@@ -29,7 +29,7 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
   double bx, by, bz;
 
   int y;
-  int switched = 0;
+  int switched;
   double dx0, dx1, dz0, dz1;
 
   color c;
@@ -62,121 +62,126 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
     else {
       if (y2 > y0) {
         tx = x1;
-	      ty = y1;
-	      tz = z1;
-	      mx = x2;
-	      my = y2;
-	      mz = z2;
-	      bx = x0;
+	ty = y1;
+	tz = z1;
+	mx = x2;
+	my = y2;
+	mz = z2;
+	bx = x0;
         by = y0;
         bz = z0;
       }
       else {
-	       tx = x1;
-	       ty = y1;
-	       tz = z1;
-	       mx = x0;
-         my = y0;
-	       mz = z0;
-         bx = x2;
-	       by = y2;
-	       bz = z2;
+	tx = x1;
+	ty = y1;
+	tz = z1;
+	mx = x0;
+	my = y0;
+	mz = z0;
+	bx = x2;
+	by = y2;
+	bz = z2;
       }
     }
   }
   else {
     if (y0 > y2) {
-	     if (y2 > y1) {
-	        tx = x0;
-	        ty = y0;
-          tz = z0;
-          mx = x2;
-          my = y2;
-          mz = z2;
-          bx = x1;
-          by = y1;
-          bz = z1;
-        }
-        else {
-          tx = x0;
-	        ty = y0;
-	        tz = z0;
-	        mx = x1;
-	        my = y1;
-	        mz = z1;
-	        bx = x2;
-	        by = y2;
-	        bz = z2;
-        }
+      if (y2 > y1) {
+	tx = x0;
+	ty = y0;
+	tz = z0;
+	mx = x2;
+	my = y2;
+	mz = z2;
+	bx = x1;
+	by = y1;
+	bz = z1;
       }
       else {
-	       tx = x2;
-	       ty = y2;
-	       tz = z2;
-	       mx = x0;
-	       my = y0;
-	       mz = z0;
-	       bx = x1;
-	       by = y1;
-	       bz = z1;
-       }
-     }
+	tx = x0;
+	ty = y0;
+	tz = z0;
+	mx = x1;
+	my = y1;
+	mz = z1;
+	bx = x2;
+	by = y2;
+	bz = z2;
+      }
+    }
+    else {
+      tx = x2;
+      ty = y2;
+      tz = z2;
+      mx = x0;
+      my = y0;
+      mz = z0;
+      bx = x1;
+      by = y1;
+      bz = z1;
+    }
+  }
+  x0 = bx;
+  x1 = bx;
+  y = (int)by;
+  z0 = bz;
+  z1 = bz;
 
-  // initialize endpoints to bottom
- x0 = bx;
- x1 = bx;
- y = (int)by;
- z0 = bz;
- z1 = bz;
+  if (((int)ty - (int)by) == 0) {
+    dx0 = 0;
+  }
+  else {
+    dx0 = (tx - bx) / ((int)ty - (int)by);
+  }
 
- // calculate delta for x endpoints, z endpoints
- if (((int)ty - (int)by) == 0) {
-   dx0 = 0;
- }
- else {
-   dx0 = (tx - bx) / ((int)ty - (int)by);
- }
+  if (((int)my - (int)by) == 0) {
+    dx1 = 0;
+  }
+  else {
+    dx1 = (mx - bx) / ((int)my - (int)by);
+  }
 
- if (((int)my - (int)by) == 0) {
-   dx1 = 0;
- }
- else {
-   dx1 = (mx - bx) / ((int)my - (int)by);
- }
+  if (((int)ty - (int)by) == 0) {
+    dz0 = 0;
+  }
+  else {
+    dz0 = (tz - bz) / ((int)ty - (int)by);
+  }
 
- if (((int)ty - (int)by) == 0) {
-   dz0 = 0;
- }
- else {
-   dz0 = (tz - bz) / ((int)ty - (int)by);
- }
+  if (((int)my - (int)by) == 0) {
+    dz1 = 0;
+  }
+  else {
+    dz1 = (mz - bz) / ((int)my - (int)by);
+  }
 
- if (((int)my - (int)by) == 0) {
-   dz1 = 0;
- }
- else {
-   dz1 = (mz - bz) / ((int)my - (int)by);
- }
+  switched = 0;
 
- // for each y from bottom to top
- for (y = by; y <= (int) ty; y++) {
+  for (y = by; y <= (int) ty; y++) {
+    if (!switched && y >= (int)my) {
+      switched = 1;
+      if (((int)ty - (int)my) == 0) {
+	dx1 = 0;
+      }
+      else {
+	dx1 = (tx - mx) / ((int)ty - (int)my);
+      }
+      if (((int)ty - (int)my) == 0) {
+	dz1 = 0;
+      }
+      else {
+	dz1 = (tz - mz) / ((int)ty - (int)my);
+      }
+      x1 = mx;
+      z1 = mz;
+    }
 
-   // check if above middle, switch delta and endpoints from bm to mt
-   if (!switched && y >= (int)my) {
-     switched = 1;
-     dx1 = ((int)ty - (int)my) == 0 ? 0 : (tx - mx) / ((int)ty - (int)my);
-     dz1 = ((int)ty - (int)my) == 0 ? 0 : (tz - mz) / ((int)ty - (int)my);
-     x1 = mx;
-     z1 = mz;
-   }
-
-   // draw line, then set new endpoints
-   draw_line(x0, y, z0, x1, y, z1, s, zb, c);
-   x0 += dx0;
-   x1 += dx1;
-   z0 += dz0;
-   z1 += dz1;
- }
+    draw_line(x0, y, z0, x1, y, z1, s, zb, c);
+    x0 += dx0;
+    x1 += dx1;
+    z0 += dz0;
+    z1 += dz1;
+  }
 }
 
 /*======== void add_polygon() ==========
